@@ -31,6 +31,13 @@ export type CheckoutOrderResult = {
   deliveryFee: number
 }
 
+export class CheckoutOrderError extends Error {
+  constructor(message: string, readonly code?: string, readonly cartItemId?: string) {
+    super(message)
+    this.name = 'CheckoutOrderError'
+  }
+}
+
 declare global {
   interface Window {
     Razorpay?: new (options: RazorpayCheckoutOptions) => { open: () => void }
@@ -106,13 +113,13 @@ export const createCheckoutOrder = async (payload: {
     throw new Error('Could not reach the checkout service. Refresh the page and try again. If it continues, check that the Supabase checkout-order function is deployed and the order endpoint in .env points to this project.')
   }
 
-  let data: Partial<CheckoutOrderResult> & { error?: string }
+  let data: Partial<CheckoutOrderResult> & { error?: string; code?: string; cartItemId?: string | null }
   try {
-    data = await response.json() as Partial<CheckoutOrderResult> & { error?: string }
+    data = await response.json() as Partial<CheckoutOrderResult> & { error?: string; code?: string; cartItemId?: string | null }
   } catch {
     throw new Error('The checkout service returned an unreadable response. Please try again or contact support.')
   }
-  if (!response.ok) throw new Error(data.error || 'Unable to create the checkout order.')
+  if (!response.ok) throw new CheckoutOrderError(data.error || 'Unable to create the checkout order.', data.code, data.cartItemId || undefined)
   if (!data.orderId || typeof data.amount !== 'number' || typeof data.subtotal !== 'number' || typeof data.discount !== 'number' || typeof data.deliveryFee !== 'number') {
     throw new Error('The checkout server returned incomplete order details.')
   }

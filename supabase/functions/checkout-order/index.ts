@@ -80,13 +80,25 @@ Deno.serve(async request => {
       if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) return json({ error: 'Each item quantity must be between 1 and 10.' }, 400)
       const isCustom = item.productId === 'custom-design'
       const product = isCustom ? null : productById.get(item.productId || '')
-      if (!isCustom && !product) return json({ error: 'A product in your cart is no longer available. Refresh the store and try again.' }, 409)
+      if (!isCustom && !product) return json({
+        error: 'This product is no longer available. Remove it from your cart and try again.',
+        code: 'ITEM_UNAVAILABLE',
+        cartItemId: item.id || null
+      }, 409)
       const price = isCustom ? 499 : Number(product?.price)
       if (!Number.isFinite(price) || price <= 0) return json({ error: 'A product has an invalid price.' }, 400)
       const sizes = isCustom ? ['S', 'M', 'L', 'XL', 'XXL'] : product?.available_sizes as string[] | undefined
       const colors = isCustom ? undefined : product?.colors as string[] | undefined
-      if (item.size && sizes?.length && !sizes.includes(item.size)) return json({ error: 'A selected size is unavailable. Refresh the store and try again.' }, 409)
-      if (item.color && colors?.length && !colors.includes(item.color)) return json({ error: 'A selected color is unavailable. Refresh the store and try again.' }, 409)
+      if (item.size && sizes?.length && !sizes.includes(item.size)) return json({
+        error: 'This size is no longer available. Remove the item from your cart and try again.',
+        code: 'ITEM_UNAVAILABLE',
+        cartItemId: item.id || null
+      }, 409)
+      if (item.color && colors?.length && !colors.includes(item.color)) return json({
+        error: 'This color is no longer available. Remove the item from your cart and try again.',
+        code: 'ITEM_UNAVAILABLE',
+        cartItemId: item.id || null
+      }, 409)
       subtotal += price * item.quantity
       items.push({
         id: item.id || crypto.randomUUID(),

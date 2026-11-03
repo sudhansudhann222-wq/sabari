@@ -3,7 +3,7 @@ import { X, ShieldCheck, QrCode, CreditCard, Landmark, Banknote, ArrowLeft, Load
 import { useCart } from '../context/CartContext'
 import { Order } from '../types'
 import confetti from 'canvas-confetti'
-import { createCheckoutOrder, loadRazorpay, verifyRazorpayPayment } from '../lib/razorpay'
+import { CheckoutOrderError, createCheckoutOrder, loadRazorpay, verifyRazorpayPayment } from '../lib/razorpay'
 import { useAuth } from '../context/AuthContext'
 
 const isPhoneOtpDemo = import.meta.env.DEV && import.meta.env.VITE_DEMO_PHONE_OTP === 'true'
@@ -19,12 +19,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   onOrderCompleted
 }) => {
-  const { cartItems, appliedCoupon, subtotal, discount, deliveryFee, total, placeOrder } = useCart()
+  const { cartItems, appliedCoupon, subtotal, discount, deliveryFee, total, placeOrder, removeFromCart } = useCart()
   const { isAuthenticated, isLoading: isAuthLoading, isDemo, sendOtp, verifyOtp } = useAuth()
 
   const [checkoutStep, setCheckoutStep] = useState<'shipping' | 'payment'>('shipping')
   const step = isAuthLoading || !isAuthenticated ? 'login' : checkoutStep
   const [isProcessing, setIsProcessing] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<{ message: string; cartItemId?: string } | null>(null)
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
   const [authValue, setAuthValue] = useState('')
   const [otpCode, setOtpCode] = useState('')
@@ -128,6 +129,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const handlePayNow = async () => {
     setIsProcessing(true)
+    setCheckoutError(null)
     try {
       if (paymentMethod === 'cod') {
         if (isDemo) {
@@ -171,7 +173,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       }).open()
     } catch (error) {
       setIsProcessing(false)
-      window.alert(error instanceof Error ? error.message : 'Unable to start payment.')
+      if (error instanceof CheckoutOrderError) {
+        setCheckoutError({ message: error.message, cartItemId: error.cartItemId })
+      } else {
+        setCheckoutError({ message: error instanceof Error ? error.message : 'Unable to start payment.' })
+      }
     }
   }
 
@@ -454,6 +460,33 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
 
               {/* Pay Now Button */}
+              {checkoutError && (
+                <div role="alert" className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                  <p className="font-semibold">{checkoutError.message}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {checkoutError.cartItemId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          removeFromCart(checkoutError.cartItemId!)
+                          setCheckoutError(null)
+                        }}
+                        className="rounded-lg bg-neutral-900 px-3 py-2 text-xs font-bold text-white hover:bg-neutral-700"
+                      >
+                        Remove unavailable item
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onClose()}
+                      className="rounded-lg border border-amber-400 px-3 py-2 text-xs font-bold hover:bg-amber-100"
+                    >
+                      Review cart
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-4 border-t border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex sm:block justify-between items-baseline">
                   <p className="text-xs text-neutral-500">Total Bill</p>
