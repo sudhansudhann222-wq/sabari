@@ -15,9 +15,23 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('teecraft_wishlist')
-      return saved ? JSON.parse(saved) : ['tee-astronaut']
+      if (!saved) return []
+
+      const parsed: unknown = JSON.parse(saved)
+      if (!Array.isArray(parsed)) return []
+
+      const validProductIds = new Set(PRODUCTS.map(product => product.id))
+      const uniqueIds = [...new Set(parsed.filter((id): id is string =>
+        typeof id === 'string' && validProductIds.has(id)
+      ))]
+
+      // Older builds seeded every new wishlist with this item and persisted it.
+      // Remove that exact legacy default once so existing browsers start empty too.
+      if (uniqueIds.length === 1 && uniqueIds[0] === 'tee-astronaut') return []
+
+      return uniqueIds
     } catch {
-      return ['tee-astronaut']
+      return []
     }
   })
 
