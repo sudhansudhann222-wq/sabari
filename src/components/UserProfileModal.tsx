@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { X, User, Package, MapPin, CheckCircle2, Database, Palette, ArrowRight, LogOut } from 'lucide-react'
+import { X, User, Package, MapPin, CheckCircle2, Palette, ArrowRight, LogOut } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { TShirtCanvas } from './TShirtCanvas'
-import { isSupabaseConfigured, fetchSavedDesignsFromSupabase, fetchOrdersFromSupabase, SavedCustomDesign } from '../lib/supabase'
+import { fetchSavedDesignsFromSupabase, fetchOrdersFromSupabase, SavedCustomDesign } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 interface UserProfileModalProps {
   isOpen: boolean
   onClose: () => void
   onOpenLogin: () => void
-  onOpenDatabaseSettings: () => void
   onLoadCustomDesign?: (design: SavedCustomDesign) => void
 }
 
@@ -17,7 +16,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
   onOpenLogin,
-  onOpenDatabaseSettings,
   onLoadCustomDesign
 }) => {
   const { orders: localOrders } = useCart()
@@ -25,7 +23,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [activeTab, setActiveTab] = useState<'orders' | 'designs' | 'address'>('orders')
   const [savedDesigns, setSavedDesigns] = useState<SavedCustomDesign[]>([])
   const [loadedOrders, setLoadedOrders] = useState<{ userId: string; orders: typeof localOrders; error?: string } | null>(null)
-  const isConnected = isSupabaseConfigured()
   const displayOrders = isAuthenticated && !isDemo && Boolean(userId) && loadedOrders && loadedOrders.userId === userId ? loadedOrders.orders : []
   const ordersLoading = isAuthenticated && !isDemo && loadedOrders?.userId !== userId
   const customer = displayOrders[0]?.shippingDetails
@@ -48,32 +45,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-neutral-200 overflow-hidden my-8 flex flex-col max-h-[85vh] animate-spring-pop">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-neutral-950/65 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="bg-[#f8fafc] rounded-[28px] w-full max-w-3xl shadow-[0_24px_80px_rgba(0,0,0,0.28)] border border-white/60 overflow-hidden my-4 flex flex-col max-h-[90vh] animate-spring-pop">
         
         {/* User Card Header */}
-        <div className="p-6 bg-neutral-900 text-white flex items-center justify-between">
+        <div className="p-5 sm:p-6 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 text-white flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-inner">
               <User className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-extrabold tracking-tight">{customer?.fullName || (isAuthenticated ? email || (phone ? `+91 ${phone}` : 'My Account') : 'Guest Profile')}</h2>
-                {/* Supabase Status Chip */}
-                <button
-                  type="button"
-                  onClick={onOpenDatabaseSettings}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition ${
-                    isConnected
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border-amber-400/40 hover:bg-amber-500/30'
-                  }`}
-                  title="Configure Supabase Database"
-                >
-                  <Database className="w-3 h-3" />
-                  <span>{isConnected ? 'Supabase Connected' : 'Connect Supabase'}</span>
-                </button>
               </div>
               <p className="text-xs text-neutral-400 mt-0.5">
                 {isAuthenticated ? `${email || (phone ? `+91 ${phone}` : 'Signed in')}${isDemo ? ' • Demo account' : ''}` : 'Guest account'}
@@ -87,7 +70,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         </div>
 
         {/* Tab switch */}
-        <div className="flex border-b border-neutral-200 px-6 bg-neutral-50/50 overflow-x-auto">
+        <div className="flex border-b border-neutral-200 px-5 sm:px-6 bg-white overflow-x-auto">
           <button
             onClick={() => setActiveTab('orders')}
             className={`py-3 text-xs font-bold uppercase tracking-wider border-b-2 mr-6 whitespace-nowrap transition ${
@@ -121,7 +104,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           
           {/* Tab 1: Orders */}
           {activeTab === 'orders' && (
@@ -152,14 +135,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               displayOrders.map(order => (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl border border-neutral-200 p-5 space-y-4 shadow-xs"
+                  className="bg-white rounded-2xl border border-neutral-200/80 p-4 sm:p-5 space-y-4 shadow-[0_4px_16px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition-shadow"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-neutral-100 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-neutral-100 text-xs">
                     <div>
                       <span className="font-extrabold text-neutral-900 text-sm">{order.orderId}</span>
                       <span className="text-neutral-400 ml-2">• {order.date}</span>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200/80">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>{order.orderStatus || 'In Production'}</span>
                     </div>
@@ -168,7 +151,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="space-y-2">
                     {order.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-neutral-100 p-1 shrink-0 overflow-hidden">
+                        <div className="w-14 h-14 rounded-xl bg-neutral-100 p-1 shrink-0 overflow-hidden border border-neutral-100">
                           <TShirtCanvas
                             color={item.color}
                             presetGraphicId={item.previewImage}
@@ -178,7 +161,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           <p className="font-bold text-neutral-900 truncate">{item.name}</p>
                           <p className="text-neutral-500">{item.colorName} • Size {item.size} • Qty {item.quantity}</p>
                         </div>
-                        <span className="font-bold text-xs text-neutral-900">
+                        <span className="font-extrabold text-sm text-neutral-900">
                           ₹{item.price * item.quantity}
                         </span>
                       </div>

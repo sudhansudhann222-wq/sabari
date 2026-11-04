@@ -55,8 +55,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl border border-neutral-200 overflow-hidden my-8 relative animate-spring-pop">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto p-0 sm:p-4">
+      <div className="bg-white rounded-none sm:rounded-3xl w-full max-w-3xl min-h-full sm:min-h-0 shadow-2xl border-0 sm:border border-neutral-200 overflow-hidden my-0 sm:my-8 relative animate-spring-pop">
+        {addedToast && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-lg animate-fade-in">
+            Added to cart
+          </div>
+        )}
         
         {/* Close Button */}
         <button
@@ -66,10 +71,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[480px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 md:min-h-[480px]">
           
           {/* Left Visual */}
-          <div className="md:col-span-6 bg-neutral-100/70 p-6 sm:p-8 flex flex-col items-center justify-center relative">
+          <div className="md:col-span-6 bg-neutral-100/70 p-4 sm:p-8 flex flex-col items-center justify-center relative min-h-[290px] sm:min-h-[360px] md:min-h-0">
             {/* Customizable Badge */}
             {product.isCustomizableBase && (
               <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-1">
@@ -91,7 +96,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             )}
 
-            <div className="w-full max-w-[320px] aspect-square">
+            <div className="w-full max-w-[320px] aspect-square max-h-[42vh]">
               <TShirtCanvas
                 color={selectedColor}
                 viewMode={selectedView}
@@ -126,7 +131,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
 
           {/* Right Product Details */}
-          <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+          <div className="md:col-span-6 p-5 sm:p-8 flex flex-col justify-between space-y-5 sm:space-y-6">
             <div className="space-y-4">
               
               {/* Badge & Title */}
@@ -241,6 +246,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   className={`flex-1 py-3.5 rounded-2xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow transition ${
                     product.inStock === false
                       ? 'bg-neutral-300 text-neutral-600 cursor-not-allowed opacity-60'
+                      : addedToast
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
                       : 'bg-neutral-900 hover:bg-neutral-800'
                   }`}
                 >

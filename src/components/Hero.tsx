@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, Truck, Award, ShieldCheck, Sparkles, Star } from 'lucide-react'
+import { ArrowRight, Truck, Award, ShieldCheck, Sparkles, Star, Heart } from 'lucide-react'
 import { TShirtCanvas } from './TShirtCanvas'
 import { Product } from '../types'
 import { useStoreData } from '../context/StoreDataContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useGSAPScrollReveal } from '../hooks/useGSAPAnimation'
 
 interface HeroProps {
@@ -47,6 +48,7 @@ export const Hero: React.FC<HeroProps> = ({
   onQuickAddToCart
 }) => {
   const { products } = useStoreData()
+  const { isInWishlist, toggleWishlist } = useWishlist()
   const [activeSlide, setActiveSlide] = useState(0)
   const trustRef = useGSAPScrollReveal<HTMLDivElement>({ stagger: 0.1, y: 15 })
 
@@ -216,16 +218,27 @@ export const Hero: React.FC<HeroProps> = ({
         </div>
 
         {/* 3 Featured Products */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {products.slice(0, 3).map(product => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+          {products.slice(0, 6).map(product => (
             <div
               key={product.id}
-              className="bg-white rounded-2xl border border-neutral-200/80 p-3.5 sm:p-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl flex flex-col justify-between group card-sheen"
+              className="bg-white rounded-2xl border border-neutral-200/80 p-2.5 sm:p-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl flex flex-col justify-between group card-sheen"
             >
               <div
                 className="relative bg-neutral-100/70 rounded-xl overflow-hidden aspect-square flex items-center justify-center cursor-pointer p-3"
                 onClick={() => onSelectProduct(product)}
               >
+                <button
+                  onClick={event => {
+                    event.stopPropagation()
+                    toggleWishlist(product.id)
+                  }}
+                  className="absolute top-2.5 right-2.5 z-30 w-8 h-8 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center text-neutral-700 hover:text-neutral-950 shadow-sm border border-neutral-200/60 transition hover:scale-110 active:scale-90"
+                  aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Save to wishlist'}
+                  title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Save to Wishlist'}
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-neutral-900 text-neutral-900' : ''}`} />
+                </button>
                 {product.isCustomizableBase && (
                   <div className="absolute top-2.5 left-2.5 z-20 flex flex-col items-start gap-1">
                     <div className="bg-black/95 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black tracking-widest text-white uppercase flex items-center gap-1 shadow border border-white/10">

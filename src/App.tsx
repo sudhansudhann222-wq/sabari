@@ -15,7 +15,6 @@ import { ProductDetailModal } from './components/ProductDetailModal'
 import { BulkOrderPage } from './components/BulkOrderPage'
 import { AboutPage } from './components/AboutPage'
 import { Footer } from './components/Footer'
-import { SupabaseModal } from './components/SupabaseModal'
 import { Product, Order } from './types'
 import { SavedCustomDesign } from './lib/supabase'
 import { useLenis } from './hooks/useLenis'
@@ -36,7 +35,6 @@ export const AppContent: React.FC = () => {
   const [profileOpen, setProfileOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-  const [supabaseOpen, setSupabaseOpen] = useState(false)
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null)
   
   const [detailProduct, setDetailProduct] = useState<Product | null>(null)
@@ -188,7 +186,6 @@ export const AppContent: React.FC = () => {
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
         onOpenLogin={() => { setProfileOpen(false); setLoginOpen(true) }}
-        onOpenDatabaseSettings={() => setSupabaseOpen(true)}
         onLoadCustomDesign={(design: SavedCustomDesign) => {
           setCustomizerProduct(null)
           setCustomizerColor(design.color)
@@ -199,12 +196,6 @@ export const AppContent: React.FC = () => {
       />
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-
-      {/* Supabase Database Settings Modal */}
-      <SupabaseModal
-        isOpen={supabaseOpen}
-        onClose={() => setSupabaseOpen(false)}
-      />
 
       {/* Checkout Modal */}
       <CheckoutModal

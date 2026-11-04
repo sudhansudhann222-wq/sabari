@@ -126,8 +126,8 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
     <div className="space-y-6">
       {/* Toast alert */}
       {addedToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold animate-fade-in border border-neutral-700">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold animate-fade-in border border-emerald-500">
+          <div className="w-2 h-2 rounded-full bg-white animate-ping" />
           <span>{addedToast}</span>
         </div>
       )}

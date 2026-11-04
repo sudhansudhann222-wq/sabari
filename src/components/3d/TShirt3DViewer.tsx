@@ -186,15 +186,94 @@ function useTShirtTexture({
   return texture
 }
 
+function useSideDesignTexture(design?: SideDesign) {
+  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null)
+
+  useEffect(() => {
+    if (!design || (!design.graphics.length && !design.texts.length)) {
+      setTexture(null)
+      return
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = 1024
+    canvas.height = 1024
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const nextTexture = new THREE.CanvasTexture(canvas)
+    nextTexture.colorSpace = THREE.SRGBColorSpace
+    nextTexture.needsUpdate = true
+    setTexture(nextTexture)
+
+    const area = { x: 512, y: 512, w: 700, h: 760 }
+    const drawGraphic = (g: CustomGraphicElement) => {
+      const preset = g.graphicId ? PRESET_GRAPHICS.find(p => p.id === g.graphicId) : null
+      const targetX = area.x + ((g.x - 50) / 50) * (area.w / 2)
+      const targetY = area.y + ((g.y - 50) / 50) * (area.h / 2)
+      const targetW = (g.width / 100) * area.w
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        ctx.save()
+        ctx.translate(targetX, targetY)
+        ctx.rotate((g.rotation * Math.PI) / 180)
+        ctx.drawImage(img, -targetW / 2, -targetW / 2, targetW, targetW)
+        ctx.restore()
+        nextTexture.needsUpdate = true
+      }
+      if (g.imageUrl) img.src = g.imageUrl
+      else if (preset) {
+        const url = URL.createObjectURL(new Blob([preset.svgContent], { type: 'image/svg+xml;charset=utf-8' }))
+        img.onload = () => {
+          ctx.save()
+          ctx.translate(targetX, targetY)
+          ctx.rotate((g.rotation * Math.PI) / 180)
+          ctx.drawImage(img, -targetW / 2, -targetW / 2, targetW, targetW)
+          ctx.restore()
+          URL.revokeObjectURL(url)
+          nextTexture.needsUpdate = true
+        }
+        img.src = url
+      }
+    }
+
+    design.graphics.forEach(drawGraphic)
+    design.texts.forEach(t => {
+      const targetX = area.x + ((t.x - 50) / 50) * (area.w / 2)
+      const targetY = area.y + ((t.y - 50) / 50) * (area.h / 2)
+      ctx.save()
+      ctx.translate(targetX, targetY)
+      ctx.rotate((t.rotation * Math.PI) / 180)
+      ctx.font = `${t.fontWeight || 'bold'} ${t.fontSize * 1.6}px ${t.fontFamily || 'sans-serif'}`
+      ctx.fillStyle = t.color || '#ffffff'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.shadowColor = 'rgba(0,0,0,0.3)'
+      ctx.shadowBlur = 4
+      ctx.fillText(t.text, 0, 0)
+      ctx.restore()
+    })
+
+    return () => nextTexture.dispose()
+  }, [design])
+
+  return texture
+}
+
 // -------------------------------------------------------------
 // 3D T-Shirt Mesh Representation
 // -------------------------------------------------------------
 function TShirtMesh({
   color,
-  texture
+  texture,
+  backTexture,
+  sleeveTexture
 }: {
   color: string
   texture: THREE.CanvasTexture | null
+  backTexture: THREE.CanvasTexture | null
+  sleeveTexture: THREE.CanvasTexture | null
 }) {
   const meshRef = useRef<THREE.Group>(null)
 
@@ -223,6 +302,10 @@ function TShirtMesh({
       metalness: 0.02
     })
   }, [color])
+
+  const overlayMaterial = (map: THREE.CanvasTexture | null) => map ? (
+    <meshBasicMaterial map={map} transparent alphaTest={0.01} side={THREE.DoubleSide} depthWrite={false} />
+  ) : null
 
   return (
     <group ref={meshRef} position={[0, -0.2, 0]}>
@@ -255,6 +338,26 @@ function TShirtMesh({
         <cylinderGeometry args={[0.34, 0.34, 0.15, 24]} />
         <meshBasicMaterial color="#18181b" side={THREE.DoubleSide} />
       </mesh>
+
+      {/* Design decals keep each side independent from the garment base texture. */}
+      {texture && <mesh position={[0, 0, 0.965]} rotation={[0, 0, 0]}>
+        <planeGeometry args={[1.25, 1.45]} />
+        {overlayMaterial(texture)}
+      </mesh>}
+      {backTexture && <mesh position={[0, 0, -0.965]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[1.25, 1.45]} />
+        {overlayMaterial(backTexture)}
+      </mesh>}
+      {sleeveTexture && <>
+        <mesh position={[-1.03, 0.65, 0.02]} rotation={[0, 0, Math.PI / 5.5]}>
+          <planeGeometry args={[0.42, 0.58]} />
+          {overlayMaterial(sleeveTexture)}
+        </mesh>
+        <mesh position={[1.03, 0.65, 0.02]} rotation={[0, 0, -Math.PI / 5.5]}>
+          <planeGeometry args={[0.42, 0.58]} />
+          {overlayMaterial(sleeveTexture)}
+        </mesh>
+      </>}
     </group>
   )
 }
@@ -280,6 +383,8 @@ export const TShirt3DViewer: React.FC<TShirt3DViewerProps> = ({
     isCustomizableBase,
     bracketColor
   })
+  const backTexture = useSideDesignTexture(backDesign)
+  const sleeveTexture = useSideDesignTexture(sleeveDesign)
 
   // Smooth camera view transitions
   const setCameraAngle = (azimuthAngle: number, polarAngle: number = Math.PI / 2) => {
@@ -315,7 +420,7 @@ export const TShirt3DViewer: React.FC<TShirt3DViewerProps> = ({
         <directionalLight position={[0, -2, 3]} intensity={0.35} />
 
         <Float speed={1.2} rotationIntensity={0.2} floatIntensity={0.3}>
-          <TShirtMesh color={color} texture={texture} />
+          <TShirtMesh color={color} texture={texture} backTexture={backTexture} sleeveTexture={sleeveTexture} />
         </Float>
 
         <ContactShadows

@@ -339,10 +339,10 @@ export const CustomizerStudio: React.FC<CustomizerStudioProps> = ({
       // ignore
     }
 
+    // Keep the success state on the button until the user changes context.
+    // This avoids it reverting to "Add to the Cart" while the user is still
+    // looking at the action they just completed.
     setAddedToast(true)
-    setTimeout(() => {
-      setAddedToast(false)
-    }, 3000)
   }
 
   // Tools definition
@@ -527,27 +527,6 @@ export const CustomizerStudio: React.FC<CustomizerStudioProps> = ({
 
   return (
     <div ref={studioRef} className="space-y-6 pb-20 lg:pb-0">
-      {/* Toast Notification */}
-      {addedToast && (
-        <div className="fixed top-20 sm:top-24 right-4 sm:right-6 left-4 sm:left-auto z-50 bg-neutral-900 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3 text-sm font-semibold border border-neutral-700 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <Check className="w-4 h-4 stroke-[2.5]" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-xs sm:text-sm">Added to Cart!</p>
-              <p className="text-neutral-400 text-[11px]">{selectedColor.name} | Size {selectedSize}</p>
-            </div>
-          </div>
-          <button
-            onClick={onCartNavigate}
-            className="px-3 py-1.5 rounded-lg bg-white text-neutral-950 font-bold text-xs hover:bg-neutral-100 transition shrink-0"
-          >
-            View Cart
-          </button>
-        </div>
-      )}
-
       {/* Main Studio Card Container */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="flex flex-col lg:grid lg:grid-cols-12 min-h-[640px]">
@@ -983,10 +962,10 @@ export const CustomizerStudio: React.FC<CustomizerStudioProps> = ({
 
               <button
                 onClick={handleAddToCart}
-                className="shine-button w-full py-3.5 px-6 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-md hover:shadow-xl transition-all duration-200 active:scale-95"
+                className={`shine-button w-full py-3.5 px-6 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-md hover:shadow-xl transition-all duration-200 active:scale-95 ${addedToast ? 'bg-emerald-600 hover:bg-emerald-700 animate-spring-pop' : 'bg-neutral-900 hover:bg-neutral-800'}`}
               >
-                <ShoppingCart className="w-4 h-4 stroke-[2.2]" />
-                <span>Add to Cart</span>
+                {addedToast ? <Check className="w-4 h-4 stroke-[2.5]" /> : <ShoppingCart className="w-4 h-4 stroke-[2.2]" />}
+                <span>{addedToast ? 'Addedd to the cart' : 'Add to the Cart'}</span>
               </button>
 
               <button
@@ -1016,10 +995,10 @@ export const CustomizerStudio: React.FC<CustomizerStudioProps> = ({
         </div>
         <button
           onClick={handleAddToCart}
-          className="py-3 px-6 rounded-xl bg-neutral-900 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition"
+          className={`py-3 px-6 rounded-xl text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition ${addedToast ? 'bg-emerald-600 animate-spring-pop' : 'bg-neutral-900'}`}
         >
-          <ShoppingCart className="w-4 h-4" />
-          <span>Add to Cart</span>
+          {addedToast ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+          <span>{addedToast ? 'Addedd to the cart' : 'Add to the Cart'}</span>
         </button>
       </div>
 
