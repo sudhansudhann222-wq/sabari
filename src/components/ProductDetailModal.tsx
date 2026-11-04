@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Star, Heart, Check, ShoppingCart, SlidersHorizontal, ShieldCheck, Truck } from 'lucide-react'
+import { X, Star, Heart, Check, ShoppingCart, SlidersHorizontal } from 'lucide-react'
 import { Product, TShirtSize } from '../types'
 import { TShirtCanvas } from './TShirtCanvas'
 import { useCart } from '../context/CartContext'
@@ -236,11 +236,22 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="space-y-3 pt-4 border-t border-neutral-100">
               <div className="flex gap-2">
                 <button
+                  disabled={product.inStock === false}
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow transition"
+                  className={`flex-1 py-3.5 rounded-2xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow transition ${
+                    product.inStock === false
+                      ? 'bg-neutral-300 text-neutral-600 cursor-not-allowed opacity-60'
+                      : 'bg-neutral-900 hover:bg-neutral-800'
+                  }`}
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  <span>{addedToast ? 'Added to Cart!' : 'Add to Cart'}</span>
+                  <span>
+                    {product.inStock === false
+                      ? 'Sold Out'
+                      : addedToast
+                      ? 'Added to Cart!'
+                      : 'Add to Cart'}
+                  </span>
                 </button>
 
                 <button

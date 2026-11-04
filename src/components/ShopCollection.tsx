@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { Heart, Star, ChevronDown, ChevronUp, SlidersHorizontal, X } from 'lucide-react'
 import { Product, TShirtSize } from '../types'
-import { PRODUCTS, COLOR_PALETTE } from '../data/products'
+import { COLOR_PALETTE } from '../data/products'
 import { TShirtCanvas } from './TShirtCanvas'
 import { useWishlist } from '../context/WishlistContext'
 import { useCart } from '../context/CartContext'
+import { useStoreData } from '../context/StoreDataContext'
 
 interface ShopCollectionProps {
   onCustomizeDesign: (product: Product) => void
@@ -16,6 +17,7 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
   onCustomizeDesign,
   onProductClick
 }) => {
+  const { products } = useStoreData()
   const { isInWishlist, toggleWishlist } = useWishlist()
   const { addToCart } = useCart()
   const [gridParentRef] = useAutoAnimate<HTMLDivElement>()
@@ -55,21 +57,27 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
     selectedColors.length > 0 ||
     selectedPatterns.length > 0
 
-  // Category counts matching screenshot mockup
-  const categoryOptions = [
-    { label: 'T-Shirts', count: 142 },
-    { label: 'Oversized', count: 56 },
-    { label: 'Polo', count: 24 },
-    { label: 'Crop', count: 18 },
-    { label: 'Full Sleeve', count: 32 }
-  ]
+  // Category counts computed dynamically from live products catalog
+  const categoryOptions = useMemo(() => {
+    const cats: Array<{ label: string; count: number }> = [
+      { label: 'T-Shirts', count: 0 },
+      { label: 'Oversized', count: 0 },
+      { label: 'Polo', count: 0 },
+      { label: 'Crop', count: 0 },
+      { label: 'Full Sleeve', count: 0 }
+    ]
+    cats.forEach(c => {
+      c.count = products.filter(p => p.category === c.label).length
+    })
+    return cats
+  }, [products])
 
   const sizeOptions: TShirtSize[] = ['S', 'M', 'L', 'XL', 'XXL']
   const patternOptions = ['Front', 'Back', 'All Over']
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter(p => {
+    return products.filter(p => {
       if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) {
         return false
       }
@@ -89,7 +97,7 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
       if (sortBy === 'rating') return b.rating - a.rating
       return b.reviewsCount - a.reviewsCount // 'popular'
     })
-  }, [selectedCategories, selectedSizes, selectedColors, selectedPatterns, sortBy])
+  }, [products, selectedCategories, selectedSizes, selectedColors, selectedPatterns, sortBy])
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -392,6 +400,15 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
                         className="group-hover/img:scale-105 transition-transform duration-300"
                       />
 
+                      {/* Out of Stock Overlay / Badge */}
+                      {product.inStock === false && (
+                        <div className="absolute inset-0 z-30 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
+                          <span className="bg-white text-neutral-900 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg">
+                            Out of Stock
+                          </span>
+                        </div>
+                      )}
+
                       {/* Wishlist Button (Top Right of image with Heart Pop) */}
                       <button
                         onClick={e => {
@@ -444,7 +461,9 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
                       <div className="mt-4 pt-2 space-y-2">
                         {/* Primary Button */}
                         <button
+                          disabled={product.inStock === false}
                           onClick={e => {
+                            if (product.inStock === false) return
                             if (product.isCustomizableBase) {
                               e.stopPropagation()
                               onCustomizeDesign(product)
@@ -452,13 +471,15 @@ export const ShopCollection: React.FC<ShopCollectionProps> = ({
                               handleAddToCart(product, e)
                             }
                           }}
-                          className={`shine-button w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all duration-200 active:scale-95 ${
-                            product.isCustomizableBase
+                          className={`shine-button w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            product.inStock === false
+                              ? 'bg-neutral-300 text-neutral-600'
+                              : product.isCustomizableBase
                               ? 'bg-blue-600 hover:bg-blue-700 text-white'
                               : 'bg-neutral-900 hover:bg-neutral-800 text-white'
                           }`}
                         >
-                          {product.isCustomizableBase ? 'CUSTOMIZE NOW' : 'ADD TO CART'}
+                          {product.inStock === false ? 'SOLD OUT' : product.isCustomizableBase ? 'CUSTOMIZE NOW' : 'ADD TO CART'}
                         </button>
 
                         {/* Secondary Button */}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { X, Heart, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
+import { X, Heart, Trash2, ShoppingCart } from 'lucide-react'
 import { useWishlist } from '../context/WishlistContext'
 import { useCart } from '../context/CartContext'
 import { TShirtCanvas } from './TShirtCanvas'

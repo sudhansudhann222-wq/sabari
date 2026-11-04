@@ -188,7 +188,13 @@ export const CartPage: React.FC<CartPageProps> = ({
                     <span className="font-extrabold text-xs bg-neutral-900 text-white px-2 py-0.5 rounded">
                       {appliedCoupon.code}
                     </span>
-                    <span className="text-xs font-bold text-emerald-600">Applied</span>
+                    {subtotal >= appliedCoupon.minSpend ? (
+                      <span className="text-xs font-bold text-emerald-600">Applied</span>
+                    ) : (
+                      <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        Add ₹{appliedCoupon.minSpend - subtotal} more to unlock
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-neutral-500 mt-1">{appliedCoupon.description}</p>
                 </div>

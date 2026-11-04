@@ -22,12 +22,13 @@ import { useLenis } from './hooks/useLenis'
 import { PageTransition } from './components/animations/PageTransition'
 import { AdminPanel } from './components/AdminPanel'
 import { LoginModal } from './components/LoginModal'
+import { StoreDataProvider } from './context/StoreDataContext'
 
 const CustomizerStudio = lazy(() => import('./components/CustomizerStudio').then(module => ({ default: module.CustomizerStudio })))
 
 export const AppContent: React.FC = () => {
   useLenis()
-  const [currentTab, setCurrentTab] = useState<'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart'>('home')
+  const [currentTab, setCurrentTab] = useState<'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart' | 'admin'>('home')
 
   // Modals and Selection state
   const [searchOpen, setSearchOpen] = useState(false)
@@ -61,6 +62,10 @@ export const AppContent: React.FC = () => {
 
   const handleSelectProduct = (product: Product) => {
     setDetailProduct(product)
+  }
+
+  if (currentTab === 'admin') {
+    return <AdminPanel onBackToStore={() => setCurrentTab('shop')} />
   }
 
   return (
@@ -232,16 +237,24 @@ export const AppContent: React.FC = () => {
 
 export default function App() {
   if (window.location.pathname.replace(/\/$/, '') === '/admin') {
-    return <AdminPanel />
+    return (
+      <StoreDataProvider>
+        <AuthProvider>
+          <AdminPanel onBackToStore={() => { window.location.href = '/' }} />
+        </AuthProvider>
+      </StoreDataProvider>
+    )
   }
 
   return (
-    <AuthProvider>
-      <WishlistProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </WishlistProvider>
-    </AuthProvider>
+    <StoreDataProvider>
+      <AuthProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </WishlistProvider>
+      </AuthProvider>
+    </StoreDataProvider>
   )
 }

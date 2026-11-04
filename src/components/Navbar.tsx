@@ -5,8 +5,8 @@ import { useWishlist } from '../context/WishlistContext'
 import { useAuth } from '../context/AuthContext'
 
 interface NavbarProps {
-  currentTab: 'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart'
-  setCurrentTab: (tab: 'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart') => void
+  currentTab: 'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart' | 'admin'
+  setCurrentTab: (tab: 'home' | 'shop' | 'customize' | 'bulk' | 'about' | 'cart' | 'admin') => void
   onOpenSearch: () => void
   onOpenWishlist: () => void
   onOpenProfile: () => void

@@ -1,5 +1,5 @@
 import React from 'react'
-import { PackageCheck, Calendar, MapPin, ArrowRight } from 'lucide-react'
+import { Calendar, MapPin, ArrowRight } from 'lucide-react'
 import { Order } from '../types'
 import { TShirtCanvas } from './TShirtCanvas'
 import { LottieFeedback } from './animations/LottieFeedback'

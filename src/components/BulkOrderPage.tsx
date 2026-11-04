@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { Building2, CheckCircle, Calculator, Send } from 'lucide-react'
 import { submitBulkInquiryToSupabase } from '../lib/supabase'
+import { useStoreData } from '../context/StoreDataContext'
 
 export const BulkOrderPage: React.FC = () => {
+  const { addBulkInquiry } = useStoreData()
   const [pcsCount, setPcsCount] = useState(50)
   const [tshirtType, setTshirtType] = useState('Oversized 240 GSM')
   const [printSides, setPrintSides] = useState<'single' | 'both'>('single')
@@ -37,7 +39,7 @@ export const BulkOrderPage: React.FC = () => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    await submitBulkInquiryToSupabase({
+    const inquiryPayload = {
       companyName: form.companyName,
       contactPerson: form.contactPerson,
       email: form.email,
@@ -46,8 +48,17 @@ export const BulkOrderPage: React.FC = () => {
       tshirtType,
       printSides,
       estimatedTotal,
-      notes: form.notes
-    })
+      notes: form.notes,
+      status: 'New'
+    }
+
+    try {
+      addBulkInquiry(inquiryPayload)
+    } catch {
+      // local store
+    }
+
+    await submitBulkInquiryToSupabase(inquiryPayload)
 
     setIsSubmitting(false)
     setSubmitted(true)

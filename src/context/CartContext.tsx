@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { CartItem, Coupon, Order } from '../types'
+import { useStoreData } from './StoreDataContext'
 
-export const AVAILABLE_COUPONS: Coupon[] = [
-  { code: 'TEECRAFT100', discountAmount: 100, minSpend: 499, description: '₹100 flat discount on orders above ₹499' },
-  { code: 'FIRST50', discountPercent: 20, minSpend: 399, description: '20% off for first-time shoppers' },
-  { code: 'FREESHIP', minSpend: 299, description: 'Free Express Shipping' }
+export const DEFAULT_COUPONS: Coupon[] = [
+  { code: 'TEECRAFT100', discountAmount: 100, minSpend: 499, description: '₹100 flat discount on orders above ₹499', isActive: true },
+  { code: 'FIRST50', discountPercent: 20, minSpend: 399, description: '20% off for first-time shoppers', isActive: true },
+  { code: 'FREESHIP', minSpend: 299, description: 'Free Express Shipping', isActive: true }
 ]
 
 interface CartContextType {
@@ -54,6 +55,8 @@ const isSameCartLine = (left: CartItem, right: CartItem) => {
 const createCartLineId = () => `cart-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { coupons, addOrder: storeAddOrder } = useStoreData()
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem('teecraft_cart')
@@ -131,9 +134,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyCoupon = (code: string) => {
     const cleanCode = code.trim().toUpperCase()
-    const found = AVAILABLE_COUPONS.find(c => c.code === cleanCode)
+    const activeCoupons = coupons && coupons.length > 0 ? coupons : DEFAULT_COUPONS
+    const found = activeCoupons.find(c => c.code === cleanCode && c.isActive !== false)
     if (!found) {
-      return { success: false, message: 'Invalid coupon code. Try TEECRAFT100 or FIRST50' }
+      const activeExamples = activeCoupons.filter(c => c.isActive !== false).map(c => c.code).slice(0, 2).join(' or ')
+      return { success: false, message: `Invalid or inactive coupon. Try ${activeExamples || 'TEECRAFT100'}` }
     }
     const currentSubtotal = cartItems.reduce((acc, it) => acc + it.price * it.quantity, 0)
     if (currentSubtotal < found.minSpend) {
@@ -177,6 +182,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setOrders(prev => [fullOrder, ...prev])
+    try {
+      storeAddOrder(fullOrder)
+    } catch {
+      // fallback
+    }
     clearCart()
 
     return fullOrder

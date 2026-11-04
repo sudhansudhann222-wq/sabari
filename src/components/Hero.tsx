@@ -3,7 +3,7 @@ import { motion } from 'motion/react'
 import { ArrowRight, Truck, Award, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import { TShirtCanvas } from './TShirtCanvas'
 import { Product } from '../types'
-import { PRODUCTS } from '../data/products'
+import { useStoreData } from '../context/StoreDataContext'
 import { useGSAPScrollReveal } from '../hooks/useGSAPAnimation'
 
 interface HeroProps {
@@ -46,6 +46,7 @@ export const Hero: React.FC<HeroProps> = ({
   onSelectProduct,
   onQuickAddToCart
 }) => {
+  const { products } = useStoreData()
   const [activeSlide, setActiveSlide] = useState(0)
   const trustRef = useGSAPScrollReveal<HTMLDivElement>({ stagger: 0.1, y: 15 })
 
@@ -216,7 +217,7 @@ export const Hero: React.FC<HeroProps> = ({
 
         {/* 3 Featured Products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {PRODUCTS.slice(0, 3).map(product => (
+          {products.slice(0, 3).map(product => (
             <div
               key={product.id}
               className="bg-white rounded-2xl border border-neutral-200/80 p-3.5 sm:p-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl flex flex-col justify-between group card-sheen"

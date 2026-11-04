@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { Search, X, Star } from 'lucide-react'
-import { PRODUCTS } from '../data/products'
 import { Product } from '../types'
 import { TShirtCanvas } from './TShirtCanvas'
+import { useStoreData } from '../context/StoreDataContext'
 
 interface SearchModalProps {
   isOpen: boolean
@@ -15,18 +15,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   onSelectProduct
 }) => {
+  const { products } = useStoreData()
   const [query, setQuery] = useState('')
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return []
     const q = query.toLowerCase()
-    return PRODUCTS.filter(p =>
+    return products.filter(p =>
       p.name.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
       p.tags.some(t => t.toLowerCase().includes(q))
     )
-  }, [query])
+  }, [query, products])
 
   if (!isOpen) return null
 
