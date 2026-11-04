@@ -2,25 +2,17 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { Order, Product, SideDesign } from '../types'
 import { PRODUCTS } from '../data/products'
 
-// Get credentials from env or user-saved localStorage
+// Supabase credentials are build-time configuration. Never persist them in browser storage.
 const getSavedUrl = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL || ''
   if (envUrl) return envUrl
-  try {
-    return localStorage.getItem('teecraft_supabase_url') || ''
-  } catch {
-    return ''
-  }
+  return ''
 }
 
 const getSavedKey = () => {
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
   if (envKey) return envKey
-  try {
-    return localStorage.getItem('teecraft_supabase_key') || ''
-  } catch {
-    return ''
-  }
+  return ''
 }
 
 let supabaseInstance: SupabaseClient | null = null
@@ -59,14 +51,9 @@ export const getSupabaseConfig = () => {
 }
 
 export const setSupabaseConfig = (url: string, key: string) => {
-  try {
-    localStorage.setItem('teecraft_supabase_url', url.trim())
-    localStorage.setItem('teecraft_supabase_key', key.trim())
-    supabaseInstance = null // force re-init
-    return true
-  } catch {
-    return false
-  }
+  void url
+  void key
+  return false
 }
 
 // Test Connection

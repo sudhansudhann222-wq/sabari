@@ -1,4 +1,4 @@
-import { corsHeaders, json } from '../_shared/cors.ts'
+import { getCorsHeaders, json } from '../_shared/cors.ts'
 
 type PaymentRequest = {
   razorpay_order_id: string
@@ -10,8 +10,8 @@ const toHex = (bytes: ArrayBuffer) =>
   Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
 
 Deno.serve(async request => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(request) })
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, request)
 
   const secret = Deno.env.get('RAZORPAY_KEY_SECRET')
   const keyId = Deno.env.get('RAZORPAY_KEY_ID')

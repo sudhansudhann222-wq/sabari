@@ -521,7 +521,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col md:flex-row antialiased selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#181a1f] text-white flex flex-col md:flex-row antialiased selection:bg-white selection:text-black">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-white text-neutral-950 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold animate-spring-pop border border-neutral-200">
@@ -531,7 +531,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
       )}
 
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-[#141414] border-b md:border-b-0 md:border-r border-white/10 p-5 md:p-6 shrink-0 flex flex-col justify-between">
+      <aside className="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-[#20242b] border-b md:border-b-0 md:border-r border-white/10 p-5 md:p-6 shrink-0 flex flex-col justify-between">
         <div>
           {/* Back button */}
           <button
@@ -605,14 +605,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 sm:p-7 md:p-9 overflow-y-auto max-w-7xl">
+      <main className="flex-1 min-w-0 p-4 sm:p-7 md:p-9 overflow-y-auto">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10 sticky top-0 z-20 bg-[#181a1f]/95 backdrop-blur-md">
           <div>
             <span className="text-[11px] font-black uppercase tracking-widest text-neutral-400">
               Management Suite
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5 capitalize">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1 capitalize">
               {activeTab === 'overview' && 'Store Dashboard'}
               {activeTab === 'products' && 'Product Catalog'}
               {activeTab === 'coupons' && 'Coupons & Promo Codes'}
@@ -658,7 +658,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
           <div className="space-y-8 mt-6">
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-[#141414] border border-white/10 rounded-2xl p-4 sm:p-5">
+              <div className="bg-[#22262d] border border-white/10 rounded-2xl p-4 sm:p-5">
                 <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                   Total Revenue
                 </span>
@@ -698,7 +698,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
             </div>
 
             {/* Quick Actions Bar */}
-            <div className="bg-[#191919] border border-white/10 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-[#252a32] border border-white/10 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h3 className="font-bold text-base text-white">Quick Management Actions</h3>
                 <p className="text-xs text-neutral-400 mt-0.5">
@@ -728,7 +728,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
             </div>
 
             {/* Recent Orders Overview */}
-            <div className="bg-[#141414] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
+            <div className="bg-[#22262d] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-black text-lg text-white">Recent Orders</h3>
@@ -884,7 +884,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
             </div>
 
             {/* Products Table */}
-            <div className="bg-[#141414] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
+            <div className="bg-[#22262d] border border-white/10 rounded-2xl overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead>
@@ -907,12 +907,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 rounded-xl bg-neutral-900 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-1">
-                                <TShirtCanvas
-                                  color={product.colors[0] || '#121212'}
-                                  presetGraphicId={product.isCustomizableBase ? undefined : product.imageUrl}
-                                  modelType={product.modelType || 'flat'}
-                                  isCustomizableBase={product.isCustomizableBase}
-                                />
+                                {(product.imageUrl.startsWith('http') || product.imageUrl.startsWith('data:image/')) ? (
+                                  <img src={product.imageUrl} alt="" className="w-full h-full object-cover rounded-lg" />
+                                ) : (
+                                  <TShirtCanvas
+                                    color={product.colors[0] || '#121212'}
+                                    presetGraphicId={product.isCustomizableBase ? undefined : product.imageUrl}
+                                    modelType={product.modelType || 'flat'}
+                                    isCustomizableBase={product.isCustomizableBase}
+                                  />
+                                )}
                               </div>
                               <div className="min-w-0">
                                 <p className="font-bold text-white text-sm truncate max-w-xs">{product.name}</p>
@@ -1621,6 +1625,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToStore }) => {
                   placeholder="https://..."
                   className="w-full bg-[#202020] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white"
                 />
+
+                <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                  <label className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-neutral-200 hover:bg-white/10 cursor-pointer transition">
+                    <span>Upload T-shirt image</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="sr-only"
+                      onChange={event => {
+                        const file = event.target.files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = loadEvent => {
+                          const imageUrl = loadEvent.target?.result
+                          if (typeof imageUrl === 'string') {
+                            setProductForm(current => ({ ...current, imageUrl }))
+                          }
+                        }
+                        reader.readAsDataURL(file)
+                      }}
+                    />
+                  </label>
+                  <span className="text-[11px] text-neutral-500">Use this to display the product photo in the storefront.</span>
+                </div>
+
+                {productForm.imageUrl.startsWith('data:image/') && (
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-2">
+                    <img src={productForm.imageUrl} alt="Uploaded T-shirt preview" className="h-16 w-16 rounded-lg object-cover" />
+                    <span className="text-xs text-emerald-300 font-semibold">Uploaded image ready</span>
+                  </div>
+                )}
 
                 <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
                   <span className="text-[11px] text-neutral-400 font-semibold shrink-0">Sample Presets:</span>

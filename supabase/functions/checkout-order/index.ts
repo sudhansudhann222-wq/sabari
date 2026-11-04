@@ -1,4 +1,4 @@
-import { corsHeaders, json } from '../_shared/cors.ts'
+import { getCorsHeaders, json } from '../_shared/cors.ts'
 
 type CheckoutItem = {
   productId?: string
@@ -33,8 +33,8 @@ const required = (value: unknown, max = 180) =>
   typeof value === 'string' && value.trim().length > 0 && value.trim().length <= max
 
 Deno.serve(async request => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(request) })
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, request)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
